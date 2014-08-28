@@ -2,8 +2,8 @@
 ;;
 ;; Author: Benjamin Beckwith
 ;; Created: 2010-6-19
-;; Version: 1.3
-;; Last-Updated: 2010-6-19
+;; Version: 2.1
+;; Last-Updated: 2014-08-28
 ;; URL: https://github.com/bnbeckwith/wc-goal-mode
 ;; Keywords:
 ;; Compatability:
@@ -21,7 +21,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;; Change Log:
-;;
+;; 
+;; 2.1 Get rid of compilation warnings
 ;; 2.0 Name change from wc-mode to wc-goal-mode
 ;; 1.3 Goal functions now perform reset by default
 ;; 1.2 Reset functions added
