@@ -248,7 +248,7 @@ operate over the entire buffer.
   (interactive)
   (if rstart
       (setq rend (max rstart rend))
-    (if (and (interactive-p) transient-mark-mode mark-active)
+    (if (and (called-interactively-p) transient-mark-mode mark-active)
 	(setq rstart (region-beginning)
 	      rend (region-end))
       (setq rstart (point-min)
@@ -256,7 +256,7 @@ operate over the entire buffer.
   (let ((wcount (funcall wc-goal-count-words-function rstart rend))
 	(lcount (funcall wc-goal-count-lines-function rstart rend))
 	(ccount (funcall wc-goal-count-chars-function rstart rend)))
-    (when (interactive-p) (message "%d line%s, %d word%s, %d char%s"
+    (when (called-interactively-p) (message "%d line%s, %d word%s, %d char%s"
 				   lcount
 				   (if (= lcount 1) "" "s")
 				   wcount
