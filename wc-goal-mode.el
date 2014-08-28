@@ -130,23 +130,23 @@ It will looks something like WC[742+360/1100] in the modeline.
 
 (defvar wc-goal-count-chars-function
   (function (lambda (rstart rend)
-    "Count the characters specified by the region bounded by
+              "Count the characters specified by the region bounded by
 RSTART and REND."
-    (- rend rstart))))
+              (- rend rstart))))
 
 (defvar wc-goal-count-words-function
   (function (lambda (rstart rend)
-    "Count the words specified by the region bounded by
+              "Count the words specified by the region bounded by
 RSTART and REND."
-    (if (boundp 'count-words)
-        (count-words rstart rend)
-      (how-many "\\w+" rstart rend)))))
+              (if (boundp 'count-words)
+                  (count-words rstart rend)
+                (how-many "\\w+" rstart rend)))))
 
 (defvar wc-goal-count-lines-function
   (function (lambda (rstart rend)
-    "Count the lines specified by the region bounded by
+              "Count the lines specified by the region bounded by
 RSTART and REND."
-    (how-many "\n" rstart rend))))
+              (how-many "\n" rstart rend))))
 
 (defvar wc-goal-modeline-format-alist
   '(("%W" . (number-to-string wc-goal-orig-words))
@@ -171,16 +171,16 @@ Format will be evaluated in `wc-goal-generate-modeline'")
   (let ((case-fold-search nil))
     (dolist (pair wc-goal-modeline-format-alist fmt)
       (when (string-match (car pair) fmt)
-	(setq fmt (replace-match (eval (cdr pair)) t t fmt))))))
+        (setq fmt (replace-match (eval (cdr pair)) t t fmt))))))
 
 (defun wc-goal-prepend-sign (val)
   "Add a sign to the beginning of a value.
 Also cheat here a bit and add nil-value processing."
   (if val
       (format "%s%d"
-	      (if (< val 0)
-		  "-" "+")
-	      (abs val))
+              (if (< val 0)
+                  "-" "+")
+              (abs val))
     "none"))
 
 (defun wc-goal-reset ()
@@ -218,16 +218,16 @@ value."
   (or
    (if wc-goal-line-goal
        (if (< wc-goal-line-goal 0)
-	   (<= wc-goal-lines-delta wc-goal-line-goal)
-	 (>= wc-goal-lines-delta wc-goal-line-goal)))
+           (<= wc-goal-lines-delta wc-goal-line-goal)
+         (>= wc-goal-lines-delta wc-goal-line-goal)))
    (if wc-goal-word-goal
        (if (< wc-goal-word-goal 0)
-	   (<= wc-goal-words-delta wc-goal-word-goal)
-	 (>= wc-goal-words-delta wc-goal-word-goal)))
+           (<= wc-goal-words-delta wc-goal-word-goal)
+         (>= wc-goal-words-delta wc-goal-word-goal)))
    (if wc-goal-char-goal
        (if (< wc-goal-char-goal 0)
-	   (<= wc-goal-chars-delta wc-goal-char-goal)
-	 (>= wc-goal-chars-delta wc-goal-char-goal)))))
+           (<= wc-goal-chars-delta wc-goal-char-goal)
+         (>= wc-goal-chars-delta wc-goal-char-goal)))))
 
 
 (defun wc-goal-count (&optional rstart rend field)
@@ -248,24 +248,25 @@ operate over the entire buffer.
   (interactive)
   (if rstart
       (setq rend (max rstart rend))
-    (if (and (called-interactively-p) transient-mark-mode mark-active)
-	(setq rstart (region-beginning)
-	      rend (region-end))
+    (if (and (called-interactively-p 'interactive)
+             transient-mark-mode mark-active)
+        (setq rstart (region-beginning)
+              rend (region-end))
       (setq rstart (point-min)
-	    rend (point-max))))
+            rend (point-max))))
   (let ((wcount (funcall wc-goal-count-words-function rstart rend))
-	(lcount (funcall wc-goal-count-lines-function rstart rend))
-	(ccount (funcall wc-goal-count-chars-function rstart rend)))
-    (when (called-interactively-p) (message "%d line%s, %d word%s, %d char%s"
-				   lcount
-				   (if (= lcount 1) "" "s")
-				   wcount
-				   (if (= wcount 1) "" "s")
-				   ccount
-				   (if (= ccount 1) "" "s")
-				   ))
+        (lcount (funcall wc-goal-count-lines-function rstart rend))
+        (ccount (funcall wc-goal-count-chars-function rstart rend)))
+    (when (called-interactively-p 'interactive) 
+      (message "%d line%s, %d word%s, %d char%s"
+               lcount
+               (if (= lcount 1) "" "s")
+               wcount
+               (if (= wcount 1) "" "s")
+               ccount
+               (if (= ccount 1) "" "s")))
     (if field
-	(nth field (list lcount wcount ccount))
+        (nth field (list lcount wcount ccount))
       (list lcount wcount ccount))))
 
 (defalias 'wc 'wc-goal-count
@@ -316,7 +317,7 @@ value is non-nil."
   :keymap wc-goal-mode-map
   ;; The mode body code
   (if wc-goal-mode
-	(run-mode-hooks 'wc-goal-mode-hooks)))
+      (run-mode-hooks 'wc-goal-mode-hooks)))
 
 (provide 'wc-goal-mode)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
