@@ -1,10 +1,10 @@
-;;; wc-mode.el --- Running word count with goals (minor mode)
+;;; wc-goal-mode.el --- Running word count with goals (minor mode)
 ;;
 ;; Author: Benjamin Beckwith
 ;; Created: 2010-6-19
 ;; Version: 1.3
 ;; Last-Updated: 2010-6-19
-;; URL: https://github.com/bnbeckwith/wc-mode
+;; URL: https://github.com/bnbeckwith/wc-goal-mode
 ;; Keywords:
 ;; Compatability:
 ;;
@@ -22,6 +22,7 @@
 ;;
 ;;; Change Log:
 ;;
+;; 2.0 Name change from wc-mode to wc-goal-mode
 ;; 1.3 Goal functions now perform reset by default
 ;; 1.2 Reset functions added
 ;; 1.1 Counting functions tied to buffer-local variables
@@ -57,11 +58,11 @@
 ;;
 ;;; Code:
 
-(defgroup wc nil
-  "Customization group for `wc-mode'."
+(defgroup wc-goal nil
+  "Customization group for `wc-goal-mode'."
   :group 'wp)
 
-(defcustom wc-modeline-format "WC[%W%w/%tw]"
+(defcustom wc-goal-modeline-format "WC[%W%w/%tw]"
   "The format string for the modeline.
 The detailed information for this minor mode can be shown in many
 ways in the modeline. The formatting strings recognized in this
@@ -85,55 +86,55 @@ of words followed by the change in words (delta), followed by the total
 number of words in the buffer.
 It will looks something like WC[742+360/1100] in the modeline.
 "
-  :group 'wc)
+  :group 'wc-goal)
 
-(defcustom wc-mode-hook nil
-  "Hook to run when entering wc-mode."
+(defcustom wc-goal-mode-hook nil
+  "Hook to run when entering wc-goal-mode."
   :type 'hook
-  :group 'wc)
+  :group 'wc-goal)
 
 (defface wc-goal-face
   '((t (:inherit highlight)))
   "Face for modeline when goal is reached"
-  :group 'wc)
+  :group 'wc-goal)
 
-(defvar wc-mode-map
+(defvar wc-goal-mode-map
   (let ((map (make-sparse-keymap "Wordcount")))
-    (define-key map (kbd "C-c C-w w") 'wc-set-word-goal)
-    (define-key map (kbd "C-c C-w l") 'wc-set-line-goal)
-    (define-key map (kbd "C-c C-w a") 'wc-set-char-goal)
-    (define-key map (kbd "C-c C-w c") 'wc-count)
+    (define-key map (kbd "C-c C-w w") 'wc-goal-set-word-goal)
+    (define-key map (kbd "C-c C-w l") 'wc-goal-set-line-goal)
+    (define-key map (kbd "C-c C-w a") 'wc-goal-set-char-goal)
+    (define-key map (kbd "C-c C-w c") 'wc-goal-count)
     map)
-  "Keymap for wc-mode")
+  "Keymap for wc-goal-mode")
 
-(defvar wc-orig-words nil "Original count of words in the buffer")
-(defvar wc-orig-lines nil "Original count of words in the buffer")
-(defvar wc-orig-chars nil "Original count of words in the buffer")
-(make-variable-buffer-local 'wc-orig-words)
-(make-variable-buffer-local 'wc-orig-lines)
-(make-variable-buffer-local 'wc-orig-chars)
+(defvar wc-goal-orig-words nil "Original count of words in the buffer")
+(defvar wc-goal-orig-lines nil "Original count of words in the buffer")
+(defvar wc-goal-orig-chars nil "Original count of words in the buffer")
+(make-variable-buffer-local 'wc-goal-orig-words)
+(make-variable-buffer-local 'wc-goal-orig-lines)
+(make-variable-buffer-local 'wc-goal-orig-chars)
 
-(defvar wc-words-delta 0 "Change in word count")
-(defvar wc-lines-delta 0 "Change in line count")
-(defvar wc-chars-delta 0 "Change in char count")
-(make-variable-buffer-local 'wc-words-delta)
-(make-variable-buffer-local 'wc-lines-delta)
-(make-variable-buffer-local 'wc-chars-delta)
+(defvar wc-goal-words-delta 0 "Change in word count")
+(defvar wc-goal-lines-delta 0 "Change in line count")
+(defvar wc-goal-chars-delta 0 "Change in char count")
+(make-variable-buffer-local 'wc-goal-words-delta)
+(make-variable-buffer-local 'wc-goal-lines-delta)
+(make-variable-buffer-local 'wc-goal-chars-delta)
 
-(defvar wc-word-goal nil "Goal for number of words added")
-(defvar wc-line-goal nil "Goal for number of lines added")
-(defvar wc-char-goal nil "Goal for numger of chars added")
-(make-variable-buffer-local 'wc-word-goal)
-(make-variable-buffer-local 'wc-line-goal)
-(make-variable-buffer-local 'wc-char-goal)
+(defvar wc-goal-word-goal nil "Goal for number of words added")
+(defvar wc-goal-line-goal nil "Goal for number of lines added")
+(defvar wc-goal-char-goal nil "Goal for numger of chars added")
+(make-variable-buffer-local 'wc-goal-word-goal)
+(make-variable-buffer-local 'wc-goal-line-goal)
+(make-variable-buffer-local 'wc-goal-char-goal)
 
-(defvar wc-count-chars-function
+(defvar wc-goal-count-chars-function
   (function (lambda (rstart rend)
     "Count the characters specified by the region bounded by
 RSTART and REND."
     (- rend rstart))))
 
-(defvar wc-count-words-function
+(defvar wc-goal-count-words-function
   (function (lambda (rstart rend)
     "Count the words specified by the region bounded by
 RSTART and REND."
@@ -141,38 +142,38 @@ RSTART and REND."
         (count-words rstart rend)
       (how-many "\\w+" rstart rend)))))
 
-(defvar wc-count-lines-function
+(defvar wc-goal-count-lines-function
   (function (lambda (rstart rend)
     "Count the lines specified by the region bounded by
 RSTART and REND."
     (how-many "\n" rstart rend))))
 
-(defvar wc-modeline-format-alist
-  '(("%W" . (number-to-string wc-orig-words))
-    ("%L" . (number-to-string wc-orig-lines))
-    ("%C" . (number-to-string wc-orig-chars))
-    ("%w" . (wc-prepend-sign wc-words-delta))
-    ("%l" . (wc-prepend-sign wc-lines-delta))
-    ("%c" . (wc-prepend-sign wc-chars-delta))
-    ("%gc" . (wc-prepend-sign wc-char-goal))
-    ("%gl" . (wc-prepend-sign wc-line-goal))
-    ("%gw" . (wc-prepend-sign wc-word-goal))
-    ("%tc" . (number-to-string (+ wc-orig-chars wc-chars-delta)))
-    ("%tl" . (number-to-string (+ wc-orig-lines wc-lines-delta)))
-    ("%tw" . (number-to-string (+ wc-orig-words wc-words-delta))))
+(defvar wc-goal-modeline-format-alist
+  '(("%W" . (number-to-string wc-goal-orig-words))
+    ("%L" . (number-to-string wc-goal-orig-lines))
+    ("%C" . (number-to-string wc-goal-orig-chars))
+    ("%w" . (wc-goal-prepend-sign wc-goal-words-delta))
+    ("%l" . (wc-goal-prepend-sign wc-goal-lines-delta))
+    ("%c" . (wc-goal-prepend-sign wc-goal-chars-delta))
+    ("%gc" . (wc-goal-prepend-sign wc-goal-char-goal))
+    ("%gl" . (wc-goal-prepend-sign wc-goal-line-goal))
+    ("%gw" . (wc-goal-prepend-sign wc-goal-word-goal))
+    ("%tc" . (number-to-string (+ wc-goal-orig-chars wc-goal-chars-delta)))
+    ("%tl" . (number-to-string (+ wc-goal-orig-lines wc-goal-lines-delta)))
+    ("%tw" . (number-to-string (+ wc-goal-orig-words wc-goal-words-delta))))
   "Format and value pair
-Format will be evaluated in `wc-generate-modeline'")
+Format will be evaluated in `wc-goal-generate-modeline'")
 
-(defvar wc-mode-hooks nil "Hooks to run upon entry to wc-mode")
+(defvar wc-goal-mode-hooks nil "Hooks to run upon entry to wc-goal-mode")
 
-(defun wc-format-modeline-string (fmt)
+(defun wc-goal-format-modeline-string (fmt)
   "Format the modeline string according to specification and return result"
   (let ((case-fold-search nil))
-    (dolist (pair wc-modeline-format-alist fmt)
+    (dolist (pair wc-goal-modeline-format-alist fmt)
       (when (string-match (car pair) fmt)
 	(setq fmt (replace-match (eval (cdr pair)) t t fmt))))))
 
-(defun wc-prepend-sign (val)
+(defun wc-goal-prepend-sign (val)
   "Add a sign to the beginning of a value.
 Also cheat here a bit and add nil-value processing."
   (if val
@@ -182,54 +183,54 @@ Also cheat here a bit and add nil-value processing."
 	      (abs val))
     "none"))
 
-(defun wc-reset ()
+(defun wc-goal-reset ()
   "Reset the original word, line, and char count to their current
 value."
   (interactive)
-  (setq wc-orig-words nil)
-  (setq wc-orig-lines nil)
-  (setq wc-orig-chars nil)
-  (wc-mode-update))
+  (setq wc-goal-orig-words nil)
+  (setq wc-goal-orig-lines nil)
+  (setq wc-goal-orig-chars nil)
+  (wc-goal-mode-update))
 
-(defun wc-set-word-goal (goal)
+(defun wc-goal-set-word-goal (goal)
   "Set a goal for adding or removing words in the buffer"
   (interactive "nHow many words: ")
-  (setq wc-word-goal goal)
-  (wc-reset)
+  (setq wc-goal-word-goal goal)
+  (wc-goal-reset)
   (message "Goal set at %d words" goal))
 
-(defun wc-set-line-goal (goal)
+(defun wc-goal-set-line-goal (goal)
   "Set a goal for adding or removing lines in the buffer"
   (interactive "nHow many lines: ")
-  (setq wc-line-goal goal)
-  (wc-reset)
+  (setq wc-goal-line-goal goal)
+  (wc-goal-reset)
   (message "Goal set at %d lines" goal))
 
-(defun wc-set-char-goal (goal)
+(defun wc-goal-set-char-goal (goal)
   "Set a goal for adding or removing chars in the buffer"
   (interactive "nHow many characters: ")
-  (setq wc-char-goal goal)
-  (wc-reset)
+  (setq wc-goal-char-goal goal)
+  (wc-goal-reset)
   (message "Goal set at %d characters" goal))
 
 (defun wc-goal-reached ()
   "Returns t when the goal change is reached."
   (or
-   (if wc-line-goal
-       (if (< wc-line-goal 0)
-	   (<= wc-lines-delta wc-line-goal)
-	 (>= wc-lines-delta wc-line-goal)))
-   (if wc-word-goal
-       (if (< wc-word-goal 0)
-	   (<= wc-words-delta wc-word-goal)
-	 (>= wc-words-delta wc-word-goal)))
-   (if wc-char-goal
-       (if (< wc-char-goal 0)
-	   (<= wc-chars-delta wc-char-goal)
-	 (>= wc-chars-delta wc-char-goal)))))
+   (if wc-goal-line-goal
+       (if (< wc-goal-line-goal 0)
+	   (<= wc-goal-lines-delta wc-goal-line-goal)
+	 (>= wc-goal-lines-delta wc-goal-line-goal)))
+   (if wc-goal-word-goal
+       (if (< wc-goal-word-goal 0)
+	   (<= wc-goal-words-delta wc-goal-word-goal)
+	 (>= wc-goal-words-delta wc-goal-word-goal)))
+   (if wc-goal-char-goal
+       (if (< wc-goal-char-goal 0)
+	   (<= wc-goal-chars-delta wc-goal-char-goal)
+	 (>= wc-goal-chars-delta wc-goal-char-goal)))))
 
 
-(defun wc-count (&optional rstart rend field)
+(defun wc-goal-count (&optional rstart rend field)
   "Count the words, lines and characters present in the region
 following point. This function follows most of the rules present
 in the `how-many' function. If INTERACTIVE is omitted or nil,
@@ -252,9 +253,9 @@ operate over the entire buffer.
 	      rend (region-end))
       (setq rstart (point-min)
 	    rend (point-max))))
-  (let ((wcount (funcall wc-count-words-function rstart rend))
-	(lcount (funcall wc-count-lines-function rstart rend))
-	(ccount (funcall wc-count-chars-function rstart rend)))
+  (let ((wcount (funcall wc-goal-count-words-function rstart rend))
+	(lcount (funcall wc-goal-count-lines-function rstart rend))
+	(ccount (funcall wc-goal-count-chars-function rstart rend)))
     (when (interactive-p) (message "%d line%s, %d word%s, %d char%s"
 				   lcount
 				   (if (= lcount 1) "" "s")
@@ -267,27 +268,27 @@ operate over the entire buffer.
 	(nth field (list lcount wcount ccount))
       (list lcount wcount ccount))))
 
-(defalias 'wc 'wc-count
-  "Alias function `wc-count' to the more legible `wc'.")
+(defalias 'wc 'wc-goal-count
+  "Alias function `wc-goal-count' to the more legible `wc'.")
 
-(defun wc-generate-modeline ()
-  (let ((modeline (wc-format-modeline-string wc-modeline-format)))
+(defun wc-goal-generate-modeline ()
+  (let ((modeline (wc-goal-format-modeline-string wc-goal-modeline-format)))
     (when (wc-goal-reached)
       (put-text-property 0 (length modeline) 'face 'wc-goal-face modeline))
     (list " " modeline)))
 
-(defun wc-mode-update ()
+(defun wc-goal-mode-update ()
   "Return a string to update the modeline appropriately"
-  (let* ((stats (wc-count (point-min) (point-max))))
-    (unless wc-orig-lines (setq wc-orig-lines (nth 0 stats)))
-    (unless wc-orig-words (setq wc-orig-words (nth 1 stats)))
-    (unless wc-orig-chars (setq wc-orig-chars (nth 2 stats)))
-    (setq wc-lines-delta (- (nth 0 stats) wc-orig-lines))
-    (setq wc-words-delta (- (nth 1 stats) wc-orig-words))
-    (setq wc-chars-delta (- (nth 2 stats) wc-orig-chars))
-    (wc-generate-modeline)))
+  (let* ((stats (wc-goal-count (point-min) (point-max))))
+    (unless wc-goal-orig-lines (setq wc-goal-orig-lines (nth 0 stats)))
+    (unless wc-goal-orig-words (setq wc-goal-orig-words (nth 1 stats)))
+    (unless wc-goal-orig-chars (setq wc-goal-orig-chars (nth 2 stats)))
+    (setq wc-goal-lines-delta (- (nth 0 stats) wc-goal-orig-lines))
+    (setq wc-goal-words-delta (- (nth 1 stats) wc-goal-orig-words))
+    (setq wc-goal-chars-delta (- (nth 2 stats) wc-goal-orig-chars))
+    (wc-goal-generate-modeline)))
 
-(define-minor-mode wc-mode
+(define-minor-mode wc-goal-mode
   "Toggle wc mode With no argument, this command toggles the
 mode.  Non-null prefix argument turns on the mode.  Null prefix
 argument turns off the mode.
@@ -301,23 +302,23 @@ this mode. Upon completion of the goal, the modeline text will
 highlight indicating that the goal has been reached.
 
 Commands:
-\\{wc-mode-map}
+\\{wc-goal-mode-map}
 
-Entry to this mode calls the value of `wc-mode-hook' if that
+Entry to this mode calls the value of `wc-goal-mode-hook' if that
 value is non-nil."
   ;; initial value (off)
   :init-value nil
   ;; The indicator for the mode line
-  :lighter (:eval (wc-mode-update))
+  :lighter (:eval (wc-goal-mode-update))
   ;; The customization group
-  :group 'wc
+  :group 'wc-goal
   ;; The local keymap to use
-  :keymap wc-mode-map
+  :keymap wc-goal-mode-map
   ;; The mode body code
-  (if wc-mode
-	(run-mode-hooks 'wc-mode-hooks)))
+  (if wc-goal-mode
+	(run-mode-hooks 'wc-goal-mode-hooks)))
 
-(provide 'wc-mode)
+(provide 'wc-goal-mode)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; wc-mode.el ends here
+;;; wc-goal-mode.el ends here
 

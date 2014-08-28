@@ -1,6 +1,6 @@
 
 
-* Wordcount Mode
+* Wordcount Goal Mode
   
   This is a minor mode to provide a 'wc' function for Emacs buffers as
   well as a modeline addition with live word, line and character counts.
@@ -14,15 +14,15 @@
 
   Obtain the package from Github
   
-: git clone git://github.com/bnbeckwith/wc-mode.git
+: git clone git://github.com/bnbeckwith/wc-goal-mode.git
 
   Then, add to your Emacs setup.
 
 : ;; Add the path to the repo
-: (add-to-list 'load-path "/path/to/wc-mode/")
-: (require 'wc-mode)
+: (add-to-list 'load-path "/path/to/wc-goal-mode/")
+: (require 'wc-goal-mode)
 : ;; Suggested setting
-: (global-set-key "\C-cw" 'wc-mode)
+: (global-set-key "\C-cw" 'wc-goal-mode)
 
   The code above sets up the minor mode and then assigns a global key
   to toggle the mode on and off.
@@ -73,7 +73,15 @@
    as a word, you would override the default behavior as follows.
 
 : ;; Override the counting of words to count commas (fields)
-: (setq wc-count-words-function
+: (setq wc-goal-count-words-function
 :    (function (lambda (rstart rend)
 :      (how-many "[^,\\n]+" rstart rend))))
    
+* Notes
+  
+  This was originally named ~wc-mode~, but another package had the
+  same name. It was already on the ELPA servers, so I opted for a name
+  change.
+
+  And since I lacked creativity that day, the functions are really
+  just ~wc-goal-~ instead of the ~wc-~ prefix.
