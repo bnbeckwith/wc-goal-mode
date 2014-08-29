@@ -280,7 +280,7 @@ operate over the entire buffer.
     (list " " modeline)))
 
 (defun wc-goal-mode-update ()
-  "Return a string to update the modeline appropriately"
+  "Return a string to update the modeline appropriately."
   (let* ((stats (wc-goal-count (point-min) (point-max))))
     (unless wc-goal-orig-lines (setq wc-goal-orig-lines (nth 0 stats)))
     (unless wc-goal-orig-words (setq wc-goal-orig-words (nth 1 stats)))
