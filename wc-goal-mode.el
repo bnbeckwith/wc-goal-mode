@@ -280,7 +280,7 @@ operate over the entire buffer.
     (list " " modeline)))
 
 (defun wc-goal-mode-update ()
-  "Return a string to update the modeline appropriately"
+  "Return a string to update the modeline appropriately."
   (let* ((stats (wc-goal-count (point-min) (point-max))))
     (unless wc-goal-orig-lines (setq wc-goal-orig-lines (nth 0 stats)))
     (unless wc-goal-orig-words (setq wc-goal-orig-words (nth 1 stats)))
@@ -290,6 +290,7 @@ operate over the entire buffer.
     (setq wc-goal-chars-delta (- (nth 2 stats) wc-goal-orig-chars))
     (wc-goal-generate-modeline)))
 
+;;;###autoload
 (define-minor-mode wc-goal-mode
   "Toggle wc mode With no argument, this command toggles the
 mode.  Non-null prefix argument turns on the mode.  Null prefix
