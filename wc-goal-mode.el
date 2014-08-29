@@ -290,6 +290,7 @@ operate over the entire buffer.
     (setq wc-goal-chars-delta (- (nth 2 stats) wc-goal-orig-chars))
     (wc-goal-generate-modeline)))
 
+;;;###autoload
 (define-minor-mode wc-goal-mode
   "Toggle wc mode With no argument, this command toggles the
 mode.  Non-null prefix argument turns on the mode.  Null prefix
